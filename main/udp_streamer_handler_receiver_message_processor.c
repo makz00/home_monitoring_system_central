@@ -83,7 +83,7 @@ void process_message(const udps_message_t *message)
     if (ass == NULL)
     {
         ass = get_free_assembly();
-        if (ass == NULL)
+        if (ass == NULL && xQueueReceive(xQueue, &ass, 0) != pdTRUE)
         {
             ESP_LOGI(TAG, "Drop message...");
             return;
