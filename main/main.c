@@ -23,6 +23,7 @@
 #include "udps_handler.h"
 #include "wifi_handler.h"
 #include "web_handler.h"
+#include "mdns_handler.h"
 
 static const char *TAG = "HOME_MONITORING_SYSTEM_CENTRAL";
 
@@ -37,8 +38,9 @@ void app_main(void)
 
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    ESP_LOGI(TAG, "ESP_WIFI_MODE_STA");
     ESP_ERROR_CHECK(wifi_init_sta());
+
+    ESP_ERROR_CHECK(mdns_service_init());
 
     ESP_ERROR_CHECK(udps_init());
 

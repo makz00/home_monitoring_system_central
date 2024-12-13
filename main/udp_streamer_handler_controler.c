@@ -18,11 +18,14 @@
 #include "esp_netif.h"
 #include <netdb.h>
 #include <sys/socket.h>
+#include "mdns.h"
 
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include <lwip/netdb.h>
+
+#include "esp_netif_ip_addr.h"
 
 #include "esp_err.h"
 #include "esp_log.h"
@@ -139,32 +142,58 @@ static void process_control_connection(int sock)
     }
 }
 
+static int find_camera_service(const char *hostname, struct esp_ip4_addr *addr)
+{
+    int wait_time_in_milisec = 2000;
+
+    while (1)
+    {
+        esp_err_t ret = mdns_query_a(hostname, wait_time_in_milisec, addr);
+        if(ret == ESP_OK)
+        {
+            ESP_LOGI(TAG, "Successfully found host IP for %s", hostname);
+            break;
+        }
+        else if(ret == ESP_ERR_NOT_FOUND){
+            ESP_LOGI(TAG, "Host '%s' was not found ...", hostname);
+            continue;
+        }
+        else
+        {
+            ESP_LOGE(TAG, "MDNS unknown error");
+            return -1;
+        }
+    }
+
+    return 1;
+}
+
 void udp_streamer_control_task(void *pvParameters)
 {
     const udps_config_t *config = (udps_config_t *)pvParameters;
 
-    int addr_family = AF_INET;
-    int ip_protocol = IPPROTO_IP;
-
-    struct sockaddr_in dest_addr;
-
-    int s = inet_pton(AF_INET, config->host, &dest_addr.sin_addr);
-    if (s <= 0)
+    struct esp_ip4_addr addr;
+    int ret = find_camera_service(config->hostname, &addr);
+    if (ret < 0)
     {
-        if (s == 0)
-        {
-            ESP_LOGE(TAG, "Host IP not in presentation format");
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Unable to convert address from text to bin format : errno %d", errno);
-        }
-
         vTaskDelete(NULL);
     }
 
+    struct sockaddr_in dest_addr;
+    dest_addr.sin_addr.s_addr = addr.addr;
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(config->control_port);
+
+    char host_address_str[128];
+    const char *s = inet_ntop(AF_INET, &dest_addr.sin_addr.s_addr, host_address_str, sizeof(host_address_str));
+    if (s == NULL)
+    {
+        ESP_LOGE(TAG, "Unable to convert address from bin to text format : errno %d", errno);
+        vTaskDelete(NULL);
+    }
+
+    int addr_family = AF_INET;
+    int ip_protocol = IPPROTO_IP;
 
     while (1)
     {
@@ -174,7 +203,7 @@ void udp_streamer_control_task(void *pvParameters)
             ESP_LOGE(TAG, "Unable to create socket: errno %d", errno);
             continue;
         }
-        ESP_LOGI(TAG, "Socket created, connecting to %s:%d", config->host, config->control_port);
+        ESP_LOGI(TAG, "Socket created, connecting to %s:%d", host_address_str, config->control_port);
 
         int err = connect(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
         if (err != 0)

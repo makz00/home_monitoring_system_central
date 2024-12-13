@@ -17,7 +17,7 @@
 #include "udp_streamer_handler.h"
 #include "udps_handler.h"
 
-#define CONFIG_UDP_STREAMER_HANDLER_HOST "192.168.8.146"
+#define CONFIG_UDP_STREAMER_HANDLER_CAMERA_HOST_NAME "home_monitoring_camera"
 #define CONFIG_UDP_STREAMER_HANDLER_PORT_CONTROL 5001
 #define CONFIG_UDP_STREAMER_HANDLER_PORT_DATA 5002
 #define CONFIG_UDP_STREAMER_HANDLER_BUFFERED_FRAMES 10
@@ -25,7 +25,7 @@
 static const char *TAG = "UDPS_HANDLER";
 
 static udps_config_t udps_config = {
-    .host = CONFIG_UDP_STREAMER_HANDLER_HOST,
+    .hostname = CONFIG_UDP_STREAMER_HANDLER_CAMERA_HOST_NAME,
     .control_port = CONFIG_UDP_STREAMER_HANDLER_PORT_CONTROL,
     .data_port = CONFIG_UDP_STREAMER_HANDLER_PORT_DATA,
     .buffered_fbs = CONFIG_UDP_STREAMER_HANDLER_BUFFERED_FRAMES

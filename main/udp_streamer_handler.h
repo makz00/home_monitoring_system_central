@@ -26,7 +26,7 @@ typedef struct
  */
 typedef struct
 {
-    const char *host;
+    const char *hostname;
     int control_port;
     int data_port;
     int buffered_fbs;

@@ -75,6 +75,12 @@ static int receive_whole_message(int sock, char *rx_buffer, int rx_buffer_len)
     return 1;
 }
 
+// static void punch_hole_in_nat(int sock)
+// {
+//     uint8_t bullet = 0;
+//     while (sendto(sock, &bullet, sizeof(bullet), 0, (struct sockaddr *)dest_addr, sizeof(*dest_addr)) > 0) {}
+// }
+
 static void process_receiver_connection(int sock)
 {
     char rx_buffer[sizeof(udps_message_t)];
@@ -91,6 +97,7 @@ static void process_receiver_connection(int sock)
             //     ((udps_message_t *)rx_buffer)->msg_total,
             //     ((udps_message_t *)rx_buffer)->timestamp.tv_sec,
             //     ((udps_message_t *)rx_buffer)->timestamp.tv_usec);
+
             process_message((udps_message_t *)rx_buffer);
         }
         else
@@ -98,6 +105,9 @@ static void process_receiver_connection(int sock)
             ESP_LOGE(TAG, "Cannot receive message. End receiver process");
             break;
         }
+
+        // Is it needed?
+        // punch_hole_in_nat(sock);
     }
 }
 
@@ -122,11 +132,6 @@ void udp_streamer_receiver_task(void *pvParameters)
             continue;
         }
         ESP_LOGI(TAG, "Socket created");
-
-        // struct timeval timeout;
-        // timeout.tv_sec = 10;
-        // timeout.tv_usec = 0;
-        // setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout);
 
         int err = bind(sock, (struct sockaddr *)&dest_addr, sizeof(dest_addr));
         if (err < 0)
