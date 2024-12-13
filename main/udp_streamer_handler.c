@@ -15,7 +15,7 @@
  */
 
 
-#define UDPS_RECEIVER_PRIORITY 5
+#define UDPS_RECEIVER_PRIORITY 18
 #define UDPS_CONTROL_PRIORITY 5
 
 #include "esp_err.h"
@@ -119,7 +119,7 @@ esp_err_t udp_streamer_handler_start_receiver(int data_port)
 {
     BaseType_t xStatus;
 
-    xStatus = xTaskCreate(udp_streamer_receiver_task, "udp_streamer_receiver_task", 4096, (void *)data_port, UDPS_RECEIVER_PRIORITY, &s_state->receiver_task_handle);
+    xStatus = xTaskCreatePinnedToCore(udp_streamer_receiver_task, "udp_streamer_receiver_task", 4096, (void *)data_port, UDPS_RECEIVER_PRIORITY, &s_state->receiver_task_handle, 1);
     if (xStatus != pdPASS)
     {
         ESP_LOGE(TAG, "Could not start receiver task!");
