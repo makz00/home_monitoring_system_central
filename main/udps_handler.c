@@ -3,15 +3,6 @@
  * Author: Maksymilian Komarnicki
  */
 
-/*
- * ASSUMPTIONS BEG --------------------------------------------------------------------------------
- * ASSUMPTIONS END --------------------------------------------------------------------------------
- *
- * TODO BEG ---------------------------------------------------------------------------------------
- * - Configuration options to add in 'menuconfig'/Kconfig file
- * TODO END ---------------------------------------------------------------------------------------
- */
-
 #include "esp_log.h"
 #include "esp_err.h"
 
@@ -28,7 +19,6 @@
 
 #define CONFIG_STREAMER_MDNS_SERVER_NAME "central_server"
 
-// Streamer-protocol settings
 #define CONFIG_STREAMER_FPS 15
 #define CONFIG_STREAMER_FRAME_MAX_LENGTH (100 * 1014)
 #define CONFIG_STREAMER_BUFFERED_FRAMES 10
@@ -70,7 +60,7 @@ esp_err_t udps_central_init(){
 
     esp_err_t err = streamer_central_init(&streamer_config);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "UDP streamer handler central Init Failed");
+        ESP_LOGE(TAG, "UDP streamer handler central init failed");
         return err;
     }
 
