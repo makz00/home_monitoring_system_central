@@ -26,7 +26,7 @@
 static const char *TAG = "STREAMER_HANDLER";
 
 esp_err_t udps_central_init(){
-    streamer_config_t streamer_config = {
+    streamer_central_config_t streamer_config = {
         .data_receive_task_info = {
             .stack_size = CONFIG_STREAMER_STACK_SIZE,
             .task_prio = CONFIG_STREAMER_PRIORITY,
