@@ -16,14 +16,15 @@
 
 #include "sdkconfig.h"
 #include "esp_system.h"
+
 #include "esp_log.h"
+#include "esp_err.h"
+
 #include "nvs_flash.h"
 #include "esp_wifi.h"
 
 #include "udps_handler.h"
 #include "wifi_handler.h"
-#include "web_handler.h"
-#include "mdns_handler.h"
 
 static const char *TAG = "HOME_MONITORING_SYSTEM_CENTRAL";
 
@@ -40,18 +41,9 @@ void app_main(void)
 
     ESP_ERROR_CHECK(wifi_init_sta());
 
-    ESP_ERROR_CHECK(mdns_service_init());
+    ESP_ERROR_CHECK(udps_central_init());
 
-    ESP_ERROR_CHECK(udps_init());
-
-    static httpd_handle_t server = NULL;
-
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &connect_handler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, &server));
-
-    server = start_webserver();
-
-    while (server) {
+    while (1) {
         sleep(5);
     }
 }

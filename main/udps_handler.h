@@ -7,4 +7,4 @@
 
 typedef int esp_err_t;
 
-esp_err_t udps_init();
+esp_err_t udps_central_init();
