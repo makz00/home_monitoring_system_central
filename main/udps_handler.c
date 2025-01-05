@@ -6,7 +6,9 @@
 #include "esp_log.h"
 #include "esp_err.h"
 
-#include "streamer_central.h"
+#include "mdns.h"
+
+#include "espfsp_server.h"
 #include "udps_handler.h"
 
 #define CONFIG_STREAMER_STACK_SIZE 4096
@@ -17,51 +19,78 @@
 #define CONFIG_STREAMER_ACCESSOR_PORT_CONTROL 5003
 #define CONFIG_STREAMER_ACCESSOR_PORT_DATA 5004
 
-#define CONFIG_STREAMER_MDNS_SERVER_NAME "central_server"
-
 #define CONFIG_STREAMER_FPS 15
 #define CONFIG_STREAMER_FRAME_MAX_LENGTH (100 * 1014)
 #define CONFIG_STREAMER_BUFFERED_FRAMES 10
 
+#define CONFIG_STREAMER_CAMERA_PIXFORMAT ESPFSP_PIXFORMAT_JPEG
+#define CONFIG_STREAMER_CAMERA_FRAMESIZE ESPFSP_FRAMESIZE_CIF
+
+#define CONFIG_STREAMER_MDNS_SERVER_NAME "espfsp_server"
+
 static const char *TAG = "STREAMER_HANDLER";
 
+static espfsp_server_handler_t server_handler = NULL;
+
+static esp_err_t start_mdns_service(const char *hostname)
+{
+    esp_err_t err = mdns_init();
+    if (err) {
+        ESP_LOGI(TAG, "MDNS Init failed: %d\n", err);
+        return ESP_FAIL;
+    }
+
+    mdns_hostname_set(hostname);
+    return ESP_OK;
+}
+
 esp_err_t udps_central_init(){
-    streamer_central_config_t streamer_config = {
-        .data_receive_task_info = {
+    esp_err_t ret = start_mdns_service(CONFIG_STREAMER_MDNS_SERVER_NAME);
+    if (ret != ESP_OK)
+    {
+        return ret;
+    }
+
+    espfsp_server_config_t streamer_config = {
+        .client_push_data_task_info = {
             .stack_size = CONFIG_STREAMER_STACK_SIZE,
             .task_prio = CONFIG_STREAMER_PRIORITY,
         },
-        .data_send_task_info = {
+        .client_play_data_task_info = {
             .stack_size = CONFIG_STREAMER_STACK_SIZE,
             .task_prio = CONFIG_STREAMER_PRIORITY,
         },
-        .camera_control_task_info = {
+        .client_push_session_and_control_task_info = {
             .stack_size = CONFIG_STREAMER_STACK_SIZE,
             .task_prio = CONFIG_STREAMER_PRIORITY,
         },
-        .client_control_task_info = {
+        .client_play_session_and_control_task_info = {
             .stack_size = CONFIG_STREAMER_STACK_SIZE,
             .task_prio = CONFIG_STREAMER_PRIORITY,
         },
-        .camera_local_ports = {
+        .client_push_local = {
             .control_port = CONFIG_STREAMER_CAMERA_PORT_CONTROL,
             .data_port = CONFIG_STREAMER_CAMERA_PORT_DATA,
         },
-        .client_local_ports = {
+        .client_play_local = {
             .control_port = CONFIG_STREAMER_ACCESSOR_PORT_CONTROL,
             .data_port = CONFIG_STREAMER_ACCESSOR_PORT_DATA,
         },
-        .trans = STREAMER_TRANSPORT_UDP,
+        .client_push_data_transport = ESPFSP_TRANSPORT_TCP,
+        .client_play_data_transport = ESPFSP_TRANSPORT_TCP,
+        .frame_config = {
+            .pixel_format = CONFIG_STREAMER_CAMERA_PIXFORMAT,
+            .frame_size = CONFIG_STREAMER_CAMERA_FRAMESIZE,
+            .frame_max_len = CONFIG_STREAMER_FRAME_MAX_LENGTH,
+            .fps = CONFIG_STREAMER_FPS,
+        },
         .buffered_fbs = CONFIG_STREAMER_BUFFERED_FRAMES,
-        .frame_max_len = CONFIG_STREAMER_FRAME_MAX_LENGTH,
-        .fps = CONFIG_STREAMER_FPS,
-        .server_mdns_name = CONFIG_STREAMER_MDNS_SERVER_NAME,
     };
 
-    esp_err_t err = streamer_central_init(&streamer_config);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "UDP streamer handler central init failed");
-        return err;
+    server_handler  = espfsp_server_init(&streamer_config);
+    if (server_handler == NULL) {
+        ESP_LOGE(TAG, "Server ESPFSP init failed");
+        return ESP_FAIL;
     }
 
     return ESP_OK;
