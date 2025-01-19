@@ -19,12 +19,10 @@
 #define CONFIG_STREAMER_ACCESSOR_PORT_CONTROL 5003
 #define CONFIG_STREAMER_ACCESSOR_PORT_DATA 5004
 
-#define CONFIG_STREAMER_CAMERA_PIXFORMAT ESPFSP_PIXFORMAT_JPEG
-#define CONFIG_STREAMER_CAMERA_FRAMESIZE ESPFSP_FRAMESIZE_CIF
 #define CONFIG_STREAMER_FRAME_MAX_LENGTH (100 * 1014)
 #define CONFIG_STREAMER_FPS 15
-
 #define CONFIG_STREAMER_BUFFERED_FRAMES 10
+#define CONFIG_STREAMER_FRAMES_BEFORE_GET 0
 
 #define CONFIG_STREAMER_MDNS_SERVER_NAME "espfsp_server"
 
@@ -79,12 +77,11 @@ esp_err_t udps_central_init(){
         .client_push_data_transport = ESPFSP_TRANSPORT_TCP,
         .client_play_data_transport = ESPFSP_TRANSPORT_TCP,
         .frame_config = {
-            .pixel_format = CONFIG_STREAMER_CAMERA_PIXFORMAT,
-            .frame_size = CONFIG_STREAMER_CAMERA_FRAMESIZE,
             .frame_max_len = CONFIG_STREAMER_FRAME_MAX_LENGTH,
             .fps = CONFIG_STREAMER_FPS,
+            .buffered_fbs = CONFIG_STREAMER_BUFFERED_FRAMES,
+            .fb_in_buffer_before_get = CONFIG_STREAMER_FRAMES_BEFORE_GET,
         },
-        .buffered_fbs = CONFIG_STREAMER_BUFFERED_FRAMES,
     };
 
     server_handler  = espfsp_server_init(&streamer_config);
