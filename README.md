@@ -1,4 +1,4 @@
-# Home Monitoring System Remote Central
+# Home Monitoring System Central
 
 ## Description
 
@@ -37,6 +37,6 @@ The server module is a core component of the monitoring system, facilitating com
 
 Maksymilian Komarnicki – [GitHub](https://github.com/makz00).
 
-## Licencja
+## License
 
 ...
