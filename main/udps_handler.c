@@ -24,6 +24,12 @@
 #define CONFIG_STREAMER_BUFFERED_FRAMES 10
 #define CONFIG_STREAMER_FRAMES_BEFORE_GET 0
 
+#define CONFIG_STREAMER_CAMERA_PIXFORMAT ESPFSP_PIXFORMAT_JPEG
+#define CONFIG_STREAMER_CAMERA_FRAMESIZE ESPFSP_FRAMESIZE_CIF
+#define CONFIG_STREAMER_CAMERA_GRAB_MODE ESPFSP_GRAB_WHEN_EMPTY
+#define CONFIG_STREAMER_CAMERA_JPEG_QUALITY 6
+#define CONFIG_STREAMER_CAMERA_FB_COUNT 2
+
 #define CONFIG_STREAMER_MDNS_SERVER_NAME "espfsp_server"
 
 static const char *TAG = "STREAMER_HANDLER";
@@ -82,6 +88,13 @@ esp_err_t udps_central_init(){
             .buffered_fbs = CONFIG_STREAMER_BUFFERED_FRAMES,
             .fb_in_buffer_before_get = CONFIG_STREAMER_FRAMES_BEFORE_GET,
         },
+        .cam_config = {
+            .cam_grab_mode = CONFIG_STREAMER_CAMERA_GRAB_MODE,
+            .cam_jpeg_quality = CONFIG_STREAMER_CAMERA_JPEG_QUALITY,
+            .cam_fb_count = CONFIG_STREAMER_CAMERA_FB_COUNT,
+            .cam_pixel_format = CONFIG_STREAMER_CAMERA_PIXFORMAT,
+            .cam_frame_size = CONFIG_STREAMER_CAMERA_FRAMESIZE,
+        }
     };
 
     server_handler  = espfsp_server_init(&streamer_config);
